@@ -12,8 +12,10 @@
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16.4.6-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js 16" /></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.3.0-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.12" /></a>
+  <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" /></a>
+  <a href="https://stanfordnlp.github.io/stanza/"><img src="https://img.shields.io/badge/Stanford_Stanza-1.15-8C1515?style=for-the-badge&logo=stanford&logoColor=white" alt="Stanford Stanza" /></a>
   <a href="https://stanfordnlp.github.io/CoreNLP/"><img src="https://img.shields.io/badge/Stanford_CoreNLP-4.5.5-8C1515?style=for-the-badge&logo=stanford&logoColor=white" alt="Stanford CoreNLP" /></a>
-  <a href="https://www.java.com/"><img src="https://img.shields.io/badge/Java-OpenJDK_17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17" /></a>
   <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB_Atlas-Connected-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Atlas" /></a>
   <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-v4.3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS v4" /></a>
   <a href="https://www.brevo.com/"><img src="https://img.shields.io/badge/Brevo_SMTP-Relay_587-0B99FF?style=for-the-badge&logo=brevo&logoColor=white" alt="Brevo SMTP" /></a>
@@ -285,7 +287,9 @@ graph TD
 
 1. **The User Interface**: Built with React 19 and Tailwind CSS v4. When you click *"Analyze"*, the UI sends your text or uploaded file to Next.js.
 2. **Next.js Server (Port 3000)**: Serves the pages and acts as a secure API gateway. It extracts text from `.docx` or `.txt` files, formats the request parameters, and sends them to CoreNLP.
-3. **CoreNLP Java Server (Port 9000)**: Runs as an independent Java 17 background service with 4GB of RAM allocated. It runs all requested neural models across 12 worker threads and sends back a structured JSON response.
+3. **NLP Engine (Dual-Option Support)**:
+   - **In-Project Python Engine (Port 8000 - Recommended)**: Powered by Stanford's official `stanza` neural pipeline and PyTorch. Runs directly inside the project with zero Java dependencies.
+   - **Stanford CoreNLP Java Server (Port 9000)**: Stanford's classic Java 17 daemon running multi-threaded JAR models.
 4. **Cloud Database (MongoDB Atlas)**: Automatically stores analysis logs (tokens processed, latency, and sentiment) and verification codes.
 5. **Transactional Email (Brevo)**: Sends official 6-digit login codes to user emails over a secure TLS SMTP connection.
 
@@ -297,8 +301,9 @@ graph TD
 | **UI Library** | React | `19.3.0` | Powers the reactive studio canvas and visual components |
 | **Styling** | Tailwind CSS | `4.3.3` | Clean dark-mode UI with modern glassmorphism styling |
 | **Visual Charts** | Recharts | `3.10.1` | Line/Area charts, Donut charts, and Bar charts for dashboard |
-| **NLP Engine** | Stanford CoreNLP | `4.5.5` | Academic neural pipeline for syntax, entities, and parsing |
-| **Backend Runtime**| Java OpenJDK | `17` | High-performance JVM running the CoreNLP models |
+| **Python NLP Engine** | Stanford Stanza & PyTorch | `1.15.1` / `2.14+` | In-project Python neural engine emitting exact CoreNLP ASTs |
+| **Java NLP Engine** | Stanford CoreNLP | `4.5.5` | Alternative Java server for Stanford's classic pipeline |
+| **Python Runtime** | FastAPI & Uvicorn | `0.100+` | Ultra-fast ASGI microservice running the in-project models |
 | **Database** | MongoDB Atlas | `v6.x` | Cloud document storage for users, OTPs, and activities |
 | **Email Relay** | Brevo (Sendinblue) | SMTP TLS | Sends login and password reset verification codes |
 | **Document Reader**| Mammoth.js | `1.13.0` | Extracts raw text from `.docx` Microsoft Word documents |
@@ -384,14 +389,19 @@ sequenceDiagram
 
 ## 6. Installation & Quickstart Guide
 
-Getting Textra running on your local machine is simple. You will need two terminal windows: one for the Stanford CoreNLP Java engine, and one for the Next.js web app.
+Getting Textra running on your local machine is simple. Textra gives you **two flexible options** for the NLP engine:
+
+1. **Option A (Recommended & In-Project)**: Run the Python Stanford Stanza neural engine (`python_engine/`) on port `8000` &mdash; no Java installation required!
+2. **Option B (Classic)**: Run the Stanford CoreNLP Java server on port `9000`.
+
+Textra automatically detects whichever engine is running!
 
 ### 6.1 Prerequisites
 
-Make sure you have these installed:
+Make sure you have:
 - **Node.js**: `v20.x` or higher ([Download Node.js](https://nodejs.org/))
-- **Java**: Java 17 JDK or higher ([Download OpenJDK 17](https://learn.microsoft.com/en-us/java/openjdk/download))
-- **Memory**: At least 6GB RAM on your machine (4GB is dedicated to the Java heap).
+- **Python**: `3.10+` with PyTorch (for Option A, Recommended)
+- *Optional for Option B*: **Java**: Java 17 JDK or higher ([Download OpenJDK 17](https://learn.microsoft.com/en-us/java/openjdk/download))
 
 ### 6.2 Step 1: Clone & Install Dependencies
 
@@ -403,9 +413,31 @@ cd Textra
 npm install
 ```
 
-### 6.3 Step 2: Start the CoreNLP Java Server
+### 6.3 Step 2: Start the NLP Engine
 
-The Stanford CoreNLP Java engine must run in the background. In your first terminal:
+#### Option A: In-Project Python NLP Engine (Recommended)
+
+In your first terminal, install the Python requirements and start the engine:
+
+```bash
+# 1. Install Python neural dependencies
+pip install -r python_engine/requirements.txt
+
+# 2. Start the Python NLP engine on port 8000
+npm run engine
+# or: python python_engine/server.py
+```
+
+> **How to verify Option A**: Open `http://localhost:8000/ping` in your browser. It should display `pong`.
+>
+> **Direct CLI usage**: You can also run annotations directly from terminal:
+> ```bash
+> npm run engine:cli -- "Stanford University was founded in California."
+> ```
+
+#### Option B: Classic Stanford CoreNLP Java Server
+
+If you prefer using the Java daemon:
 
 ```bash
 # Navigate to the CoreNLP directory where the model JARs are located
@@ -415,7 +447,7 @@ cd CoreNLP
 java -Xmx4g -cp "target/classes;src;lib/*;liblocal/*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 30000
 ```
 
-> **How to verify it's working**: Open `http://localhost:9000/ping` in your browser. It should simply display `pong`.
+> **How to verify Option B**: Open `http://localhost:9000/ping` in your browser. It should display `pong`.
 
 ### 6.4 Step 3: Configure Environment (.env.local)
 
@@ -428,9 +460,9 @@ cp .env.example .env.local
 Open `.env.local` and add your credentials:
 
 ```env
-# Stanford CoreNLP Engine
-CORENLP_URL=http://localhost:9000
-NEXT_PUBLIC_CORENLP_URL=http://localhost:9000
+# NLP Engine (Port 8000 for Python Stanza, or Port 9000 for Java CoreNLP)
+CORENLP_URL=http://localhost:8000
+NEXT_PUBLIC_CORENLP_URL=http://localhost:8000
 
 # Brevo (Sendinblue) SMTP for login verification codes
 BREVO_SMTP_HOST=smtp-relay.brevo.com

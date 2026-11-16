@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  const corenlpUrl = process.env.CORENLP_URL || "http://localhost:9000";
+const CANDIDATE_URLS = [
+  process.env.CORENLP_URL,
+  "http://127.0.0.1:8000",
+  "http://localhost:8000",
+  "http://127.0.0.1:9000",
+  "http://localhost:9000",
+].filter(Boolean) as string[];
 
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { text, annotators, pipelineLanguage } = body;
@@ -32,34 +38,59 @@ export async function POST(req: NextRequest) {
       date: new Date().toISOString(),
     };
 
-    // If OpenIE is requested, allow fallback rule-based clause splitting when optional model is not installed
     if (annotatorList.includes("openie")) {
       props["openie.splitter.nomodel"] = "true";
     }
 
-    const targetUrl = new URL(corenlpUrl);
-    targetUrl.searchParams.set("properties", JSON.stringify(props));
-    targetUrl.searchParams.set("pipelineLanguage", lang);
+    const defaultUrl = process.env.CORENLP_URL || "http://127.0.0.1:8000";
+    const urlsToTry = Array.from(new Set([defaultUrl, ...CANDIDATE_URLS]));
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout for heavy parsing
+    let corenlpResponse: Response | null = null;
+    let lastError: unknown = null;
 
-    const corenlpResponse = await fetch(targetUrl.toString(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-      },
-      body: encodeURIComponent(text.trim()),
-      signal: controller.signal,
-    });
+    for (const url of urlsToTry) {
+      try {
+        const targetUrl = new URL(url);
+        targetUrl.searchParams.set("properties", JSON.stringify(props));
+        targetUrl.searchParams.set("pipelineLanguage", lang);
 
-    clearTimeout(timeout);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000);
+
+        const res = await fetch(targetUrl.toString(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          },
+          body: encodeURIComponent(text.trim()),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeout);
+        corenlpResponse = res;
+        break;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    if (!corenlpResponse) {
+      const message = lastError instanceof Error ? lastError.message : "Unable to reach any NLP engine";
+      return NextResponse.json(
+        {
+          error: "Failed to connect to NLP engine",
+          details: message,
+          suggestion: "Start the Python engine (`python textra/python_engine/server.py`) on port 8000 or CoreNLP on port 9000.",
+        },
+        { status: 503 }
+      );
+    }
 
     if (!corenlpResponse.ok) {
       const errText = await corenlpResponse.text();
       return NextResponse.json(
         {
-          error: "CoreNLP Processing Error",
+          error: "NLP Processing Error",
           details: errText,
           status: corenlpResponse.status,
         },
@@ -73,11 +104,10 @@ export async function POST(req: NextRequest) {
     const message = err instanceof Error ? err.message : "Annotation request failed";
     return NextResponse.json(
       {
-        error: "Failed to connect to Stanford CoreNLP server",
+        error: "Internal Server Error",
         details: message,
-        suggestion: "Verify that the CoreNLP server is running on http://localhost:9000.",
       },
-      { status: 503 }
+      { status: 500 }
     );
   }
 }

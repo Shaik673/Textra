@@ -1,50 +1,56 @@
 import { NextResponse } from "next/server";
 
+const CANDIDATE_URLS = [
+  process.env.CORENLP_URL,
+  "http://127.0.0.1:8000",
+  "http://localhost:8000",
+  "http://127.0.0.1:9000",
+  "http://localhost:9000",
+].filter(Boolean) as string[];
+
+const UNIQUE_URLS = Array.from(new Set(CANDIDATE_URLS));
+
 export async function GET() {
-  const corenlpUrl = process.env.CORENLP_URL || "http://localhost:9000";
   const startTime = Date.now();
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
+  for (const url of UNIQUE_URLS) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
 
-    const res = await fetch(`${corenlpUrl}/ping`, {
-      method: "GET",
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    const latency = Date.now() - startTime;
-
-    if (res.ok) {
-      return NextResponse.json({
-        online: true,
-        url: corenlpUrl,
-        latencyMs: latency,
-        status: "connected",
-        message: "Stanford CoreNLP server is operational.",
+      const res = await fetch(`${url}/ping`, {
+        method: "GET",
+        signal: controller.signal,
       });
-    }
+      clearTimeout(timeout);
 
-    return NextResponse.json(
-      {
-        online: false,
-        url: corenlpUrl,
-        status: "error",
-        message: `CoreNLP server returned status ${res.status}`,
-      },
-      { status: 502 }
-    );
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unable to reach CoreNLP server";
-    return NextResponse.json(
-      {
-        online: false,
-        url: corenlpUrl,
-        status: "offline",
-        message: `CoreNLP server at ${corenlpUrl} is currently offline. Ensure StanfordCoreNLPServer is running on port 9000. (${message})`,
-      },
-      { status: 503 }
-    );
+      if (res.ok) {
+        const latency = Date.now() - startTime;
+        const isPython = url.includes("8000");
+        return NextResponse.json({
+          online: true,
+          url,
+          engine: isPython ? "Stanford Stanza (Python In-Project Engine)" : "Stanford CoreNLP (Java Server)",
+          latencyMs: latency,
+          status: "connected",
+          message: isPython
+            ? "In-Project Stanford Stanza Python NLP Engine is operational."
+            : "Stanford CoreNLP server is operational.",
+        });
+      }
+    } catch {
+      // Continue to next candidate URL
+    }
   }
+
+  return NextResponse.json(
+    {
+      online: false,
+      url: process.env.CORENLP_URL || "http://localhost:8000",
+      status: "offline",
+      message:
+        "NLP engine is offline. Start the Python engine (`python textra/python_engine/server.py`) on port 8000 or the CoreNLP server on port 9000.",
+    },
+    { status: 503 }
+  );
 }
