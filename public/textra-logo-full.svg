@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="fullGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#e0e7ff"/>
+      <stop offset="100%" stop-color="#c7d2fe"/>
+    </linearGradient>
+    <filter id="fullGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Left Icon Emblem (Scale & Position) -->
+  <g transform="translate(40, 20) scale(0.39)">
+    <!-- Squircle Frame -->
+    <rect x="56" y="56" width="400" height="400" rx="96" fill="#0b0f19" stroke="url(#fullGradient)" stroke-width="6"/>
+    <!-- Dependency Arc -->
+    <path d="M 160 150 Q 256 70 352 150" fill="none" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+    <!-- Crossbar -->
+    <path d="M 120 150 L 392 150 C 404 150 412 160 408 172 L 394 200 C 390 208 382 214 372 214 L 140 214 C 130 214 122 208 118 200 L 104 172 C 100 160 108 150 120 150 Z" fill="url(#fullGradient)"/>
+    <!-- Stem -->
+    <path d="M 228 200 L 284 200 C 292 200 298 206 298 214 L 298 376 C 298 388 288 398 276 398 L 236 398 C 224 398 214 388 214 376 L 214 214 C 214 206 220 200 228 200 Z" fill="url(#fullGradient)"/>
+    <!-- Forward Wing -->
+    <polygon points="310,240 376,240 346,280 290,280" fill="#38bdf8" opacity="0.9"/>
+    <!-- Nodes -->
+    <circle cx="160" cy="150" r="12" fill="#38bdf8" stroke="#ffffff" stroke-width="3"/>
+    <circle cx="352" cy="150" r="12" fill="#ec4899" stroke="#ffffff" stroke-width="3"/>
+    <circle cx="256" cy="150" r="14" fill="#a855f7" stroke="#ffffff" stroke-width="4"/>
+    <circle cx="256" cy="380" r="13" fill="#ec4899" stroke="#ffffff" stroke-width="3"/>
+  </g>
+
+  <!-- Typography: TEXTRA -->
+  <text x="260" y="132" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="82" font-weight="900" letter-spacing="4" fill="url(#textGradient)">
+    TEXTRA
+  </text>
+
+  <!-- Tagline / Subtitle -->
+  <text x="265" y="176" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" letter-spacing="6" fill="#818cf8">
+    STANFORD CORENLP STUDIO
+  </text>
+
+  <!-- Status Indicator Dot & Label -->
+  <circle cx="730" cy="116" r="6" fill="#10b981"/>
+  <text x="746" y="121" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" fill="#a7f3d0" letter-spacing="1">
+    INTELLIGENCE
+  </text>
+</svg>
