@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable, { UserOptions } from "jspdf-autotable";
 import { CoreNLPResponse, DependencyRelation } from "@/types/corenlp";
+import { StructuredSummary } from "@/app/api/summarize/route";
 import { POS_INFO } from "./tagDescriptions";
 
 export interface PdfReportOptions {
@@ -9,6 +10,7 @@ export interface PdfReportOptions {
   activeAnnotators: string[];
   userName?: string;
   fileName?: string;
+  summary?: StructuredSummary | null;
 }
 
 // Resilient wrapper for autoTable across ESM/CJS bundlers and browser runtimes
@@ -31,6 +33,7 @@ export async function generateStudioPdfReport({
   activeAnnotators,
   userName = "Textra Explorer",
   fileName = "Textra_NLP_Analysis_Report.pdf",
+  summary,
 }: PdfReportOptions) {
   const doc = new jsPDF({
     orientation: "portrait",
@@ -134,6 +137,60 @@ export async function generateStudioPdfReport({
   }
 
   currentY += textBoxHeight + 10;
+
+  // ----------------------------------------------------
+  // 1.5 EXECUTIVE SUMMARY (if available)
+  // ----------------------------------------------------
+  if (summary) {
+    checkPageBreak(50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59);
+    doc.text("Executive Summary (Gemini AI Synthesis)", margin, currentY);
+    currentY += 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(79, 70, 229);
+    doc.text(summary.title, margin, currentY);
+    currentY += 5;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(51, 65, 85);
+    const splitOverview = doc.splitTextToSize(summary.overview, pageWidth - margin * 2);
+    doc.text(splitOverview, margin, currentY);
+    currentY += splitOverview.length * 4.2 + 4;
+
+    if (summary.keyPoints && summary.keyPoints.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Key Takeaways:", margin, currentY);
+      currentY += 4;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      for (const pt of summary.keyPoints) {
+        const splitPt = doc.splitTextToSize(`• ${pt}`, pageWidth - margin * 2 - 4);
+        doc.text(splitPt, margin + 2, currentY);
+        currentY += splitPt.length * 3.8;
+      }
+      currentY += 3;
+    }
+
+    if (summary.takeaway) {
+      doc.setFillColor(254, 243, 199);
+      doc.setDrawColor(251, 191, 36);
+      const splitTakeaway = doc.splitTextToSize(`Strategic Verdict: ${summary.takeaway}`, pageWidth - margin * 2 - 6);
+      const h = splitTakeaway.length * 4 + 4;
+      doc.roundedRect(margin, currentY, pageWidth - margin * 2, h, 1, 1, "FD");
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(146, 64, 14);
+      doc.text(splitTakeaway, margin + 3, currentY + 4);
+      currentY += h + 8;
+    }
+  }
 
   // ----------------------------------------------------
   // 2. POS & LEMMAS SECTION (if pos or lemma is checked)

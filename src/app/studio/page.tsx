@@ -11,9 +11,10 @@ import { DependencyVisualizer } from "@/components/studio/DependencyVisualizer";
 import { ParseTreeVisualizer } from "@/components/studio/ParseTreeVisualizer";
 import { CorefVisualizer } from "@/components/studio/CorefVisualizer";
 import { OpenIeVisualizer } from "@/components/studio/OpenIeVisualizer";
-import { JsonViewer } from "@/components/studio/JsonViewer";
+import { SummaryVisualizer } from "@/components/studio/SummaryVisualizer";
 import { Footer } from "@/components/layout/Footer";
 import { CoreNLPResponse } from "@/types/corenlp";
+import { StructuredSummary } from "@/app/api/summarize/route";
 import { generateStudioPdfReport } from "@/lib/pdfReportGenerator";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -24,13 +25,9 @@ import {
   Network,
   Users,
   Share2,
-  FileCode,
   AlertTriangle,
   Sparkles,
-  Info,
   Layers,
-  ArrowRight,
-  Zap,
   FileDown,
   CheckCircle2,
   RotateCcw,
@@ -50,10 +47,12 @@ export default function StudioPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [nlpData, setNlpData] = useState<CoreNLPResponse | null>(null);
+  const [summaryData, setSummaryData] = useState<StructuredSummary | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "pos" | "ner" | "sentiment" | "depparse" | "parse" | "coref" | "openie" | "json"
+    "pos" | "ner" | "sentiment" | "depparse" | "parse" | "coref" | "openie" | "summary"
   >("pos");
 
   // Check server health
@@ -77,7 +76,37 @@ export default function StudioPage() {
     checkStatus();
   }, [checkStatus]);
 
-  // Run Neural NLP annotation
+  // Generate Gemini Summary standalone
+  const handleGenerateSummaryOnly = async () => {
+    if (!text.trim()) {
+      setError("Please enter or paste text to summarize.");
+      return;
+    }
+    setIsSummarizing(true);
+    try {
+      const res = await fetch("/api/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.details || data.error || "Failed to generate summary");
+      }
+      setSummaryData(data.summary);
+      if (!annotators.includes("summary")) {
+        setAnnotators((prev) => [...prev, "summary"]);
+      }
+      setActiveTab("summary");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to generate summary";
+      setError(msg);
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  // Run Neural NLP annotation & optional Summarizer
   const runAnnotation = async () => {
     if (!text.trim()) {
       setError("Please enter or paste text to annotate.");
@@ -85,7 +114,7 @@ export default function StudioPage() {
     }
 
     if (annotators.length === 0) {
-      setError("Please check at least one pipeline annotation checkbox above (e.g. POS, NER, Parse Tree) before running analysis.");
+      setError("Please check at least one pipeline annotation checkbox above (e.g. POS, NER, AI Summarizer) before running analysis.");
       return;
     }
 
@@ -93,13 +122,45 @@ export default function StudioPage() {
     setError(null);
     const startTime = Date.now();
 
+    const hasSummary = annotators.includes("summary");
+    const nlpAnnotators = annotators.filter((a) => a !== "summary");
+
+    // If summary is checked, initiate Gemini API call
+    let summaryPromise: Promise<void> | null = null;
+    if (hasSummary) {
+      setIsSummarizing(true);
+      summaryPromise = fetch("/api/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      })
+        .then(async (r) => {
+          const d = await r.json();
+          if (r.ok && d.success && d.summary) {
+            setSummaryData(d.summary);
+          } else {
+            console.warn("Summary generation notice:", d.details || d.error);
+          }
+        })
+        .catch((err) => {
+          console.warn("Summary generation error:", err);
+        })
+        .finally(() => {
+          setIsSummarizing(false);
+        });
+    }
+
+    // Call NLP backend for linguistic annotations
+    const annotatorListForBackend =
+      nlpAnnotators.length > 0 ? nlpAnnotators : ["tokenize", "ssplit", "pos"];
+
     try {
       const res = await fetch("/api/annotate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text,
-          annotators,
+          annotators: annotatorListForBackend,
           pipelineLanguage: language,
         }),
       });
@@ -112,10 +173,16 @@ export default function StudioPage() {
 
       setNlpData(data);
 
-      // Auto-switch to the first selected annotator's tab if current tab is not in annotators
-      if (annotators.length > 0 && !annotators.includes(activeTab) && activeTab !== "json") {
+      // Auto-switch to tab
+      if (hasSummary && nlpAnnotators.length === 0) {
+        setActiveTab("summary");
+      } else if (annotators.length > 0 && !annotators.includes(activeTab)) {
         const firstSelected = annotators[0];
-        if (["pos", "ner", "sentiment", "depparse", "parse", "coref", "openie"].includes(firstSelected)) {
+        if (
+          ["pos", "ner", "sentiment", "depparse", "parse", "coref", "openie", "summary"].includes(
+            firstSelected
+          )
+        ) {
           setActiveTab(firstSelected as typeof activeTab);
         }
       }
@@ -139,6 +206,10 @@ export default function StudioPage() {
           status: "Completed",
         }),
       }).catch((err) => console.warn("Could not record activity to MongoDB:", err));
+
+      if (summaryPromise) {
+        await summaryPromise;
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to execute annotation";
       setError(msg);
@@ -186,6 +257,7 @@ export default function StudioPage() {
       "parse",
       "coref",
       "openie",
+      "summary",
     ]);
   };
 
@@ -204,6 +276,7 @@ export default function StudioPage() {
         activeAnnotators: annotators,
         userName: user?.name || "Textra Explorer",
         fileName: `Textra_NLP_Report_${Date.now()}.pdf`,
+        summary: summaryData,
       });
     } catch (err: unknown) {
       console.error("PDF Export error:", err);
@@ -239,7 +312,7 @@ export default function StudioPage() {
               Natural Language Processing Studio
             </h2>
             <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-              Analyze text using the integrated Textra neural suite: select your annotations, input custom text, and generate real-time interactive syntax trees, parts of speech, named entities, and sentiment analysis.
+              Analyze text using the integrated Textra neural suite: select your annotations, input custom text, and generate real-time interactive syntax trees, parts of speech, named entities, sentiment, and AI-powered executive summaries.
             </p>
           </div>
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-indigo-500/20 to-transparent pointer-events-none" />
@@ -254,7 +327,7 @@ export default function StudioPage() {
           onSelectAllAnnotators={selectAllAnnotators}
           onResetAnnotators={resetAnnotators}
           onRunAnnotation={runAnnotation}
-          isLoading={isLoading}
+          isLoading={isLoading || isSummarizing}
           onUploadFile={handleUploadFile}
         />
 
@@ -272,7 +345,7 @@ export default function StudioPage() {
         )}
 
         {/* Initial Empty State - Shown when user has not run text yet */}
-        {!nlpData && !isLoading && (
+        {!nlpData && !isLoading && !summaryData && (
           <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/40 p-8 sm:p-12 text-center space-y-6">
             <div className="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto shadow-sm">
               <Layers className="w-8 h-8" />
@@ -283,7 +356,7 @@ export default function StudioPage() {
                 Ready for Text Analysis
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Enter your text in the workspace above, check the annotations you want to extract, and click <strong className="text-zinc-700 dark:text-zinc-300">Run Analysis</strong>.
+                Enter your text in the workspace above, check the annotations you want to extract (including the new AI Summarizer), and click <strong className="text-zinc-700 dark:text-zinc-300">Run Analysis</strong>.
               </p>
             </div>
 
@@ -315,17 +388,17 @@ export default function StudioPage() {
                   Constituency Tree
                 </div>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Hierarchical phrase structure tree with interactive glowing line edges.
+                  Hierarchical phrase structure tree with interactive line edges.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-2xs space-y-1">
-                <div className="text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1.5">
-                  <Smile className="w-3.5 h-3.5" />
-                  Sentiment Polarity
+                <div className="text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  AI Summarizer
                 </div>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Recursive deep neural sentiment distribution from Negative to Positive.
+                  Executive summaries, paragraph breakdowns, takeaways & process flow.
                 </p>
               </div>
             </div>
@@ -333,7 +406,7 @@ export default function StudioPage() {
         )}
 
         {/* Outcomes & Visualization Room - Shown only after user executes analysis */}
-        {nlpData && (
+        {(nlpData || summaryData) && (
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* Export & Status Action Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
@@ -347,6 +420,12 @@ export default function StudioPage() {
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
                       {sentences.length} {sentences.length === 1 ? "Sentence" : "Sentences"} &bull; {totalTokens} Tokens
                     </span>
+                    {summaryData && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-semibold border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        AI Summary Ready
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                     {annotators.length > 0
@@ -399,12 +478,12 @@ export default function StudioPage() {
               <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">
                 <div className="text-xs text-zinc-500 font-medium">Coreference Clusters</div>
                 <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-mono">
-                  {Object.keys(nlpData.corefs || {}).length}
+                  {Object.keys(nlpData?.corefs || {}).length}
                 </div>
               </div>
             </div>
 
-            {/* Navigation Tabs */}
+            {/* Navigation Tabs (Raw JSON replaced with AI Summarizer) */}
             <div className="border-b border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-1.5 overflow-x-auto pb-px">
                 {[
@@ -415,21 +494,24 @@ export default function StudioPage() {
                   { id: "sentiment", label: "Sentiment", icon: Smile },
                   { id: "coref", label: "Coreference", icon: Users },
                   { id: "openie", label: "Open IE Facts", icon: Share2 },
-                  { id: "json", label: "Raw JSON AST", icon: FileCode },
+                  { id: "summary", label: "AI Summarizer", icon: Sparkles },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const active = activeTab === tab.id;
+                  const isSummary = tab.id === "summary";
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as typeof activeTab)}
                       className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition-all border-b-2 whitespace-nowrap cursor-pointer ${
                         active
-                          ? "border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20"
+                          ? isSummary
+                            ? "border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
+                            : "border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20"
                           : "border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/50"
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className={`w-3.5 h-3.5 ${isSummary && active ? "text-amber-500" : ""}`} />
                       <span>{tab.label}</span>
                     </button>
                   );
@@ -439,14 +521,20 @@ export default function StudioPage() {
 
             {/* Visualizer Panels */}
             <div className="pt-2">
-              {activeTab === "pos" && <PosVisualizer data={nlpData} />}
-              {activeTab === "ner" && <NerVisualizer data={nlpData} />}
-              {activeTab === "sentiment" && <SentimentVisualizer data={nlpData} />}
-              {activeTab === "depparse" && <DependencyVisualizer data={nlpData} />}
-              {activeTab === "parse" && <ParseTreeVisualizer data={nlpData} />}
-              {activeTab === "coref" && <CorefVisualizer data={nlpData} />}
-              {activeTab === "openie" && <OpenIeVisualizer data={nlpData} />}
-              {activeTab === "json" && <JsonViewer data={nlpData} />}
+              {activeTab === "pos" && <PosVisualizer data={nlpData!} />}
+              {activeTab === "ner" && <NerVisualizer data={nlpData!} />}
+              {activeTab === "sentiment" && <SentimentVisualizer data={nlpData!} />}
+              {activeTab === "depparse" && <DependencyVisualizer data={nlpData!} />}
+              {activeTab === "parse" && <ParseTreeVisualizer data={nlpData!} />}
+              {activeTab === "coref" && <CorefVisualizer data={nlpData!} />}
+              {activeTab === "openie" && <OpenIeVisualizer data={nlpData!} />}
+              {activeTab === "summary" && (
+                <SummaryVisualizer
+                  summary={summaryData}
+                  isLoading={isSummarizing}
+                  onGenerateSummary={handleGenerateSummaryOnly}
+                />
+              )}
             </div>
           </div>
         )}

@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, Mail, Lock, ArrowRight, AlertCircle, Zap } from "lucide-react";
+import { Sparkles, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { GoogleIcon, GithubIcon, LinkedinIcon } from "@/components/brand/SocialIcons";
@@ -55,32 +55,6 @@ function LoginContent() {
   const handleSocialOAuth = (provider: "google" | "github" | "linkedin") => {
     setLoading(true);
     window.location.href = `/api/auth/oauth/${provider}`;
-  };
-
-  const handleQuickSocial = async (provider: "google" | "github" | "linkedin") => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/auth/social-quick", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider,
-          email: `${provider}.user@textra-nlp.com`,
-          name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Explorer`,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Social authentication failed");
-
-      router.push(redirectPath);
-      router.refresh();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Social authentication failed";
-      setError(msg);
-      setLoading(false);
-    }
   };
 
   return (
@@ -137,22 +111,6 @@ function LoginContent() {
               <LinkedinIcon className="w-4 h-4 mr-1.5 text-[#0A66C2]" />
               LinkedIn
             </button>
-          </div>
-
-          {/* Quick 1-click test social logins */}
-          <div className="flex items-center justify-center gap-1.5 pt-1">
-            <span className="text-[10px] text-zinc-400">One-click test:</span>
-            {(["google", "github", "linkedin"] as const).map((prov) => (
-              <button
-                key={prov}
-                type="button"
-                onClick={() => handleQuickSocial(prov)}
-                className="text-[10px] px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 transition-colors inline-flex items-center gap-1"
-              >
-                <Zap className="w-2.5 h-2.5 text-amber-500" />
-                {prov}
-              </button>
-            ))}
           </div>
 
           <div className="relative flex items-center justify-center my-4">

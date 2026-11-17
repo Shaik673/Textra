@@ -35,6 +35,7 @@ const AVAILABLE_ANNOTATORS = [
   { id: "parse", label: "Constituency Parse", desc: "Full hierarchical phrase structure tree" },
   { id: "coref", label: "Coreference", desc: "Cross-mention and pronoun entity links" },
   { id: "openie", label: "Open IE & Relations", desc: "Semantic relational triplets" },
+  { id: "summary", label: "AI Summarizer", desc: "Executive summary, themes, takeaways & flow (Gemini AI)" },
 ];
 
 export function TextInput({
