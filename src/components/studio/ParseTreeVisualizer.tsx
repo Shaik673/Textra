@@ -84,52 +84,52 @@ function VisualTreeNode({
     if (theme === "neon") {
       if (label === "ROOT" || label === "S") {
         return isHighlighted
-          ? "bg-purple-600 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.8)] scale-105"
+          ? "bg-purple-600 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.8)] ring-2 ring-purple-400"
           : "bg-purple-950/80 text-purple-300 border-purple-800 hover:border-purple-500";
       }
       if (label.startsWith("NP")) {
         return isHighlighted
-          ? "bg-cyan-500 text-white border-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.8)] scale-105"
+          ? "bg-cyan-500 text-white border-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.8)] ring-2 ring-cyan-300"
           : "bg-cyan-950/80 text-cyan-300 border-cyan-800 hover:border-cyan-500";
       }
       if (label.startsWith("VP")) {
         return isHighlighted
-          ? "bg-emerald-500 text-white border-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.8)] scale-105"
+          ? "bg-emerald-500 text-white border-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.8)] ring-2 ring-emerald-300"
           : "bg-emerald-950/80 text-emerald-300 border-emerald-800 hover:border-emerald-500";
       }
       if (label.startsWith("PP")) {
         return isHighlighted
-          ? "bg-amber-500 text-white border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.8)] scale-105"
+          ? "bg-amber-500 text-white border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.8)] ring-2 ring-amber-300"
           : "bg-amber-950/80 text-amber-300 border-amber-800 hover:border-amber-500";
       }
       return isHighlighted
-        ? "bg-indigo-600 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.8)] scale-105"
+        ? "bg-indigo-600 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.8)] ring-2 ring-indigo-400"
         : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-zinc-500";
     }
 
     // Modern & Classic styles
     if (label === "ROOT" || label === "S") {
       return isHighlighted
-        ? "bg-purple-600 text-white border-purple-500 shadow-md scale-105 ring-2 ring-purple-400/40"
+        ? "bg-purple-600 text-white border-purple-500 shadow-md ring-2 ring-purple-400"
         : "bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800";
     }
     if (label.startsWith("NP")) {
       return isHighlighted
-        ? "bg-blue-600 text-white border-blue-500 shadow-md scale-105 ring-2 ring-blue-400/40"
+        ? "bg-blue-600 text-white border-blue-500 shadow-md ring-2 ring-blue-400"
         : "bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800";
     }
     if (label.startsWith("VP")) {
       return isHighlighted
-        ? "bg-emerald-600 text-white border-emerald-500 shadow-md scale-105 ring-2 ring-emerald-400/40"
+        ? "bg-emerald-600 text-white border-emerald-500 shadow-md ring-2 ring-emerald-400"
         : "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800";
     }
     if (label.startsWith("PP")) {
       return isHighlighted
-        ? "bg-amber-600 text-white border-amber-500 shadow-md scale-105 ring-2 ring-amber-400/40"
+        ? "bg-amber-600 text-white border-amber-500 shadow-md ring-2 ring-amber-400"
         : "bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800";
     }
     return isHighlighted
-      ? "bg-indigo-600 text-white border-indigo-500 shadow-md scale-105 ring-2 ring-indigo-400/40"
+      ? "bg-indigo-600 text-white border-indigo-500 shadow-md ring-2 ring-indigo-400"
       : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700";
   };
 
@@ -142,13 +142,13 @@ function VisualTreeNode({
   if (isLeaf) {
     return (
       <div
-        className="flex flex-col items-center mx-1 my-1 transition-all duration-200"
+        className="flex flex-col items-center mx-1 my-1"
         onMouseEnter={() => onHover(node.id, node)}
         onMouseLeave={() => onHover(null, null)}
       >
         {/* Leaf grammatical POS tag badge */}
         <span
-          className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border transition-all ${getBadgeStyle(
+          className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border transition-colors ${getBadgeStyle(
             node.label
           )}`}
           title={`${node.label}: Terminal POS Tag`}
@@ -161,9 +161,9 @@ function VisualTreeNode({
 
         {/* Terminal word token */}
         <span
-          className={`text-xs font-semibold px-2 py-0.5 rounded-md border transition-all ${
+          className={`text-xs font-semibold px-2 py-0.5 rounded-md border transition-colors ${
             isHighlighted
-              ? "bg-indigo-50 dark:bg-indigo-950/80 border-indigo-400 text-indigo-700 dark:text-indigo-200 font-bold scale-105 shadow-sm"
+              ? "bg-indigo-50 dark:bg-indigo-950/80 border-indigo-400 text-indigo-700 dark:text-indigo-200 font-bold ring-2 ring-indigo-400 shadow-sm"
               : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-2xs"
           }`}
         >
@@ -177,7 +177,7 @@ function VisualTreeNode({
 
   return (
     <div
-      className="flex flex-col items-center mx-1 my-1 transition-all duration-200"
+      className="flex flex-col items-center mx-1 my-1"
       onMouseEnter={() => onHover(node.id, node)}
       onMouseLeave={() => onHover(null, null)}
     >
@@ -420,43 +420,50 @@ export function ParseTreeVisualizer({ data }: ParseTreeVisualizerProps) {
         </div>
       </div>
 
-      {/* Live Node Hover Insight Card */}
-      {hoveredNode && (
-        <div className="p-3.5 rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-zinc-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-mono font-bold text-sm shadow-md shadow-indigo-600/30">
-              {hoveredNode.label}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                  {hoveredMeta?.title || `${hoveredNode.label} Node`}
-                </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300">
-                  Depth: {hoveredNode.depth}
-                </span>
-                {hoveredNode.word && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-semibold">
-                    Terminal Word
-                  </span>
-                )}
+      {/* Live Node Hover Insight Bar (Stable min-height prevents layout shift and scrollbar fluctuation) */}
+      <div className="min-h-[64px] p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/60 shadow-xs flex items-center justify-between gap-3 transition-colors">
+        {hoveredNode ? (
+          <>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-mono font-bold text-sm shadow-sm shrink-0">
+                {hoveredNode.label}
               </div>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
-                {hoveredMeta?.desc || "Syntactic grammatical constituent in Penn Treebank hierarchy."}
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                    {hoveredMeta?.title || `${hoveredNode.label} Node`}
+                  </span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300">
+                    Depth: {hoveredNode.depth}
+                  </span>
+                  {hoveredNode.word && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-semibold">
+                      Terminal: {hoveredNode.word}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5 truncate max-w-xl">
+                  {hoveredMeta?.desc || "Syntactic grammatical constituent in Penn Treebank hierarchy."}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="text-right">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold block">
-              Subtree Covered Span
-            </span>
-            <span className="text-xs font-medium text-indigo-600 dark:text-indigo-300 max-w-xs truncate inline-block">
-              &ldquo;{hoveredTextSpan}&rdquo;
-            </span>
+            <div className="text-right shrink-0 hidden sm:block">
+              <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold block">
+                Subtree Covered Span
+              </span>
+              <span className="text-xs font-medium text-indigo-600 dark:text-indigo-300 max-w-xs truncate inline-block">
+                &ldquo;{hoveredTextSpan}&rdquo;
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2.5 text-xs text-zinc-400 dark:text-zinc-500 py-1">
+            <Sparkles className="w-4 h-4 text-indigo-500/70 shrink-0" />
+            <span>Hover over any branch node or word token to trace hierarchical connections and view syntactic grammar tags.</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Main Canvas View */}
       {viewMode === "tree" ? (
@@ -472,7 +479,7 @@ export function ParseTreeVisualizer({ data }: ParseTreeVisualizerProps) {
           </div>
 
           <div
-            className={`overflow-x-auto pb-8 pt-6 flex justify-center rounded-2xl border transition-all p-6 min-h-[380px] ${
+            className={`overflow-x-auto overflow-y-hidden overscroll-contain pb-8 pt-6 flex justify-center rounded-2xl border transition-colors p-6 min-h-[380px] ${
               theme === "neon"
                 ? "bg-zinc-950/90 border-zinc-800 shadow-inner"
                 : "bg-zinc-50/60 dark:bg-zinc-950/40 border-zinc-200 dark:border-zinc-800/80"

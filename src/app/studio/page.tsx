@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { Navbar } from "@/components/layout/Navbar";
 import { Header } from "@/components/studio/Header";
 import { TextInput } from "@/components/studio/TextInput";
 import { PosVisualizer } from "@/components/studio/PosVisualizer";
@@ -217,6 +218,7 @@ export default function StudioPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors">
+      <Navbar />
       <Header
         serverStatus={serverStatus}
         latencyMs={latencyMs}
