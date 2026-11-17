@@ -13,12 +13,12 @@ export interface SessionPayload {
 }
 
 /**
- * Creates an HMAC-SHA256 signed session token
+ * Creates an HMAC-SHA256 signed session token (strictly valid for 24 hours / 1 day)
  */
-export function signSessionToken(payload: Omit<SessionPayload, "exp">, expiresInDays = 7): string {
+export function signSessionToken(payload: Omit<SessionPayload, "exp">, expiresInHours = 24): string {
   const fullPayload: SessionPayload = {
     ...payload,
-    exp: Date.now() + expiresInDays * 24 * 60 * 60 * 1000,
+    exp: Date.now() + expiresInHours * 60 * 60 * 1000,
   };
 
   const jsonStr = JSON.stringify(fullPayload);
@@ -89,9 +89,9 @@ export async function getServerSession(): Promise<SessionPayload | null> {
 }
 
 /**
- * Attach session cookie to NextResponse
+ * Attach session cookie to NextResponse (strictly 24 hours / 86400 seconds)
  */
-export function setSessionCookie(res: NextResponse, token: string, maxAgeDays = 7): void {
+export function setSessionCookie(res: NextResponse, token: string, maxAgeHours = 24): void {
   res.cookies.set({
     name: SESSION_COOKIE_NAME,
     value: token,
@@ -99,7 +99,7 @@ export function setSessionCookie(res: NextResponse, token: string, maxAgeDays = 
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: maxAgeDays * 24 * 60 * 60,
+    maxAge: maxAgeHours * 60 * 60, // 86400 seconds = strictly 24 hours / 1 day
   });
 }
 

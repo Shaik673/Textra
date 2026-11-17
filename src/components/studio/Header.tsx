@@ -36,7 +36,7 @@ export function Header({
               </span>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Stanford CoreNLP Neural & Statistical Engine
+              Neural &amp; Statistical Linguistic Engine
             </p>
           </div>
         </div>
@@ -46,11 +46,11 @@ export function Header({
           {/* Server Connection Status */}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
             <Server className="w-3.5 h-3.5 text-zinc-500" />
-            <span>CoreNLP Server:</span>
+            <span>NLP Engine:</span>
             {serverStatus === "connected" && (
               <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span>Online (Port 9000{latencyMs ? ` · ${latencyMs}ms` : ""})</span>
+                <span>Online{latencyMs ? ` · ${latencyMs}ms` : ""}</span>
               </span>
             )}
             {serverStatus === "checking" && (
@@ -67,7 +67,7 @@ export function Header({
             )}
             <button
               onClick={onRefreshStatus}
-              title="Ping CoreNLP Server"
+              title="Ping NLP Engine"
               className="ml-1 p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <RefreshCw className="w-3 h-3" />

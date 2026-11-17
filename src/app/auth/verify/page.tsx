@@ -86,7 +86,7 @@ function VerifyContent() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/studio");
       }, 1400);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Verification failed";

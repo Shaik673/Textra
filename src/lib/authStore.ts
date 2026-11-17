@@ -27,6 +27,6 @@ export const DEFAULT_USER: UserProfile = {
   verified: false,
   socialProvider: null,
   joinedDate: "November 2026",
-  bio: "Exploring computational linguistics, syntax trees, and deep neural sentiment using Stanford NLP.",
+  bio: "Exploring computational linguistics, syntax trees, and deep neural sentiment using Textra NLP.",
   organization: "Textra Linguistic Lab",
 };

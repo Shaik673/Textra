@@ -29,19 +29,24 @@ export function Navbar() {
     return false;
   };
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/studio", label: "Core Studio", badge: "Live" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/profile", label: "Profile" },
-  ];
+  const navLinks = isAuthenticated
+    ? [
+        { href: "/studio", label: "Core Studio", badge: "Live" },
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/profile", label: "Profile" },
+      ]
+    : [
+        { href: "/", label: "Home" },
+      ];
+
+  const homeHref = isAuthenticated ? "/studio" : "/";
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href={homeHref} className="flex items-center gap-2.5 group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="Textra Logo" className="w-9 h-9 rounded-xl shadow-md group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">

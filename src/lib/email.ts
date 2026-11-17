@@ -112,10 +112,10 @@ export function generateOtpEmailHtml(otp: string, recipientEmail: string): strin
       <body>
         <div class="container">
           <div class="logo">TEXTRA</div>
-          <div class="badge">Stanford CoreNLP Studio</div>
+          <div class="badge">Textra Neural NLP Studio</div>
           <h2 style="color: #ffffff; margin-top: 0; font-size: 20px;">Verify Your Email Address</h2>
           <p style="color: #a1a1aa; font-size: 14px; line-height: 1.6;">
-            Welcome to Textra! To complete your registration and secure your CoreNLP Studio account (${recipientEmail}), enter the 6-digit verification code below:
+            Welcome to Textra! To complete your registration and secure your Textra Studio account (${recipientEmail}), enter the 6-digit verification code below:
           </p>
           <div class="otp-card">
             <div class="otp-code">${otp}</div>
@@ -125,7 +125,7 @@ export function generateOtpEmailHtml(otp: string, recipientEmail: string): strin
             If you didn't request this verification code, you can safely ignore this email.
           </p>
           <div class="footer">
-            &copy; ${new Date().getFullYear()} Textra NLP Studio. Powered by Stanford CoreNLP & Brevo.
+            &copy; ${new Date().getFullYear()} Textra NLP Studio. Powered by Neural NLP & Brevo.
           </div>
         </div>
       </body>

@@ -19,13 +19,13 @@ export function Footer() {
               </span>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Enterprise Natural Language Processing suite driven by Stanford CoreNLP neural pipelines and modern interactive linguistics visualization.
+              Enterprise Natural Language Processing suite driven by deep neural NLP pipelines and modern interactive linguistics visualization.
             </p>
             <div className="flex items-center gap-3 pt-1 text-zinc-400">
-              <a href="https://github.com/stanfordnlp/CoreNLP" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
+              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
                 <GithubIcon className="w-4 h-4" />
               </a>
-              <a href="https://twitter.com/stanfordnlp" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
+              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
                 <TwitterIcon className="w-4 h-4" />
               </a>
               <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
@@ -54,7 +54,7 @@ export function Footer() {
               <li><Link href="/profile" className="hover:text-indigo-500 transition-colors">User Profile</Link></li>
               <li><Link href="/auth/login" className="hover:text-indigo-500 transition-colors">Social Sign-In</Link></li>
               <li><Link href="/auth/signup" className="hover:text-indigo-500 transition-colors">Email OTP Verification</Link></li>
-              <li><a href="http://localhost:9000" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-indigo-500 transition-colors">CoreNLP Server <ExternalLink className="w-3 h-3" /></a></li>
+              <li><Link href="/studio" className="inline-flex items-center gap-1 hover:text-indigo-500 transition-colors">Neural Studio Engine <ExternalLink className="w-3 h-3" /></Link></li>
             </ul>
           </div>
 
@@ -62,7 +62,7 @@ export function Footer() {
           <div className="space-y-3">
             <h4 className="font-semibold text-zinc-900 dark:text-zinc-200">Engine & Email</h4>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Email verification powered by <strong className="text-zinc-700 dark:text-zinc-300">Nodemailer</strong> & <strong className="text-zinc-700 dark:text-zinc-300">Brevo</strong>. Linguistic engine powered by <strong className="text-zinc-700 dark:text-zinc-300">Stanford CoreNLP 4.6.0</strong>.
+              Email verification powered by <strong className="text-zinc-700 dark:text-zinc-300">Nodemailer</strong> & <strong className="text-zinc-700 dark:text-zinc-300">Brevo</strong>. Linguistic engine powered by <strong className="text-zinc-700 dark:text-zinc-300">Textra Neural Engine v2.0</strong>.
             </p>
             <div className="p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 text-[11px] text-zinc-500">
               <span className="w-2 h-2 rounded-full inline-block bg-emerald-500 mr-1.5" />
@@ -73,7 +73,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-zinc-100 dark:border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-500">
           <div>
-            &copy; 2026 Textra NLP Studio. Built with Stanford CoreNLP, Next.js & Brevo.
+            &copy; 2026 Textra NLP Studio. Built with Next.js, Neural NLP & Brevo.
           </div>
           <div className="flex items-center gap-4">
             <Link href="/" className="hover:underline">Privacy</Link>

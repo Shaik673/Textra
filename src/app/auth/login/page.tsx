@@ -11,7 +11,7 @@ import { GoogleIcon, GithubIcon, LinkedinIcon } from "@/components/brand/SocialI
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect") || "/dashboard";
+  const redirectPath = searchParams.get("redirect") || "/studio";
   const urlError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
@@ -95,7 +95,7 @@ function LoginContent() {
             Welcome back to Textra
           </h2>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Sign in to your Stanford NLP Studio workspace
+            Sign in to your Textra NLP Studio workspace
           </p>
         </div>
 

@@ -30,12 +30,12 @@ export async function GET() {
         return NextResponse.json({
           online: true,
           url,
-          engine: isPython ? "Stanford Stanza (Python In-Project Engine)" : "Stanford CoreNLP (Java Server)",
+          engine: isPython ? "Textra Neural Engine (Python In-Project Engine)" : "Textra Linguistic Engine",
           latencyMs: latency,
           status: "connected",
           message: isPython
-            ? "In-Project Stanford Stanza Python NLP Engine is operational."
-            : "Stanford CoreNLP server is operational.",
+            ? "In-Project Textra Neural NLP Engine is operational."
+            : "Textra Linguistic Engine is operational.",
         });
       }
     } catch {
@@ -49,7 +49,7 @@ export async function GET() {
       url: process.env.CORENLP_URL || "http://localhost:8000",
       status: "offline",
       message:
-        "NLP engine is offline. Start the Python engine (`python textra/python_engine/server.py`) on port 8000 or the CoreNLP server on port 9000.",
+        "NLP engine is offline. Start the Python engine (`python textra/python_engine/server.py`) on port 8000.",
     },
     { status: 503 }
   );

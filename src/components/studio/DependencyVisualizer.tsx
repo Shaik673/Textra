@@ -40,7 +40,7 @@ export function DependencyVisualizer({ data }: DependencyVisualizerProps) {
   const svgHeight = 280;
 
   const getTokenX = (idx: number) => {
-    // idx is 1-based from CoreNLP, 0 is ROOT
+    // idx is 1-based from engine, 0 is ROOT
     if (idx === 0) return 30;
     return startX + (idx - 1) * tokenWidth + tokenWidth / 2;
   };

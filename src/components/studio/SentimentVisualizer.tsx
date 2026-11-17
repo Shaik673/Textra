@@ -68,7 +68,7 @@ export function SentimentVisualizer({ data }: SentimentVisualizerProps) {
                 {sentences[0]?.sentiment || "Neutral"}
               </div>
               <div className="text-xs text-zinc-500">
-                Calculated by Stanford Recursive Deep Model
+                Calculated by Neural Recursive Deep Model
               </div>
             </div>
           </div>

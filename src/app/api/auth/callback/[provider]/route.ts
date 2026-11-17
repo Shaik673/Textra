@@ -153,7 +153,7 @@ export async function GET(
       name: user.name,
     });
 
-    const response = NextResponse.redirect(`${appUrl}/dashboard`);
+    const response = NextResponse.redirect(`${appUrl}/studio`);
     setSessionCookie(response, token);
     return response;
   } catch (err: unknown) {

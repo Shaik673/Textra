@@ -13,6 +13,8 @@ import { OpenIeVisualizer } from "@/components/studio/OpenIeVisualizer";
 import { JsonViewer } from "@/components/studio/JsonViewer";
 import { Footer } from "@/components/layout/Footer";
 import { CoreNLPResponse } from "@/types/corenlp";
+import { generateStudioPdfReport } from "@/lib/pdfReportGenerator";
+import { useAuth } from "@/lib/useAuth";
 import {
   Tag,
   Smile,
@@ -28,9 +30,13 @@ import {
   Layers,
   ArrowRight,
   Zap,
+  FileDown,
+  CheckCircle2,
+  RotateCcw,
 } from "lucide-react";
 
 export default function StudioPage() {
+  const { user } = useAuth();
   // Empty text initially - no output should display unless user submits text
   const [text, setText] = useState<string>("");
   // All annotation boxes remain unchecked initially unless user checks them
@@ -41,6 +47,7 @@ export default function StudioPage() {
   const [latencyMs, setLatencyMs] = useState<number | undefined>(undefined);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const [nlpData, setNlpData] = useState<CoreNLPResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +76,7 @@ export default function StudioPage() {
     checkStatus();
   }, [checkStatus]);
 
-  // Run CoreNLP / Python annotation
+  // Run Neural NLP annotation
   const runAnnotation = async () => {
     if (!text.trim()) {
       setError("Please enter or paste text to annotate.");
@@ -186,6 +193,25 @@ export default function StudioPage() {
     setAnnotators([]);
   };
 
+  const handleExportPdf = async () => {
+    if (!nlpData) return;
+    setIsExporting(true);
+    try {
+      await generateStudioPdfReport({
+        text,
+        nlpData,
+        activeAnnotators: annotators,
+        userName: user?.name || "Textra Explorer",
+        fileName: `Textra_NLP_Report_${Date.now()}.pdf`,
+      });
+    } catch (err: unknown) {
+      console.error("PDF Export error:", err);
+      alert("Failed to generate PDF report.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const sentences = nlpData?.sentences || [];
   const totalTokens = sentences.reduce((acc, s) => acc + (s.tokens?.length || 0), 0);
 
@@ -205,13 +231,13 @@ export default function StudioPage() {
           <div className="relative z-10 max-w-3xl space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              Stanford NLP Studio Workspace
+              Textra Neural NLP Studio Workspace
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Natural Language Processing Studio
             </h2>
             <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-              Analyze text using the integrated Stanford NLP suite: select your annotations, input custom text, and generate real-time interactive syntax trees, parts of speech, named entities, and sentiment analysis.
+              Analyze text using the integrated Textra neural suite: select your annotations, input custom text, and generate real-time interactive syntax trees, parts of speech, named entities, and sentiment analysis.
             </p>
           </div>
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-indigo-500/20 to-transparent pointer-events-none" />
@@ -307,6 +333,47 @@ export default function StudioPage() {
         {/* Outcomes & Visualization Room - Shown only after user executes analysis */}
         {nlpData && (
           <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Export & Status Action Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <span>Linguistic Analysis Generated</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
+                      {sentences.length} {sentences.length === 1 ? "Sentence" : "Sentences"} &bull; {totalTokens} Tokens
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    {annotators.length > 0
+                      ? `Active Annotations: ${annotators.map((a) => a.toUpperCase()).join(", ")}`
+                      : "No specific annotations selected."}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md shadow-indigo-500/25 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+                title="Export full structured report in PDF format"
+              >
+                {isExporting ? (
+                  <>
+                    <RotateCcw className="w-4 h-4 animate-spin" />
+                    <span>Compiling PDF Report...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-4 h-4" />
+                    <span>Export Report (PDF)</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* Summary Statistics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">

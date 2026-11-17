@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Failed to connect to NLP engine",
           details: message,
-          suggestion: "Start the Python engine (`python textra/python_engine/server.py`) on port 8000 or CoreNLP on port 9000.",
+          suggestion: "Start the Python engine (`python textra/python_engine/server.py`) on port 8000.",
         },
         { status: 503 }
       );

@@ -33,7 +33,7 @@ import { useAuth } from "@/lib/useAuth";
 export default function ProfilePage() {
   const { user: authUser, refreshUser, logout } = useAuth();
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
-  const [activeTab, setActiveTab] = useState<"general" | "social" | "corenlp" | "security" | "brevo">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "social" | "nlp" | "security" | "brevo">("general");
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<"checking" | "online" | "offline">("checking");
   const [serverUrl, setServerUrl] = useState("http://localhost:8000");
@@ -44,7 +44,7 @@ export default function ProfilePage() {
     }
   }, [authUser]);
 
-  // CoreNLP Annotators preferences
+  // Neural Annotators preferences
   const [annotators, setAnnotators] = useState({
     tokenize: true,
     ssplit: true,
@@ -58,7 +58,7 @@ export default function ProfilePage() {
     openie: true,
   });
 
-  // Check CoreNLP server status
+  // Check NLP server status
   useEffect(() => {
     checkServer();
   }, []);
@@ -182,7 +182,7 @@ export default function ProfilePage() {
           {[
             { id: "general", label: "Profile & Identity", icon: User },
             { id: "social", label: "Social Accounts", icon: Key },
-            { id: "corenlp", label: "CoreNLP Engine", icon: Cpu },
+            { id: "nlp", label: "Neural Engine", icon: Cpu },
             { id: "brevo", label: "Brevo SMTP & Email", icon: Mail },
             { id: "security", label: "Security & Sessions", icon: Shield },
           ].map((tab) => {
@@ -308,7 +308,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex justify-between py-2 border-b border-slate-800/60">
                     <span>Active Model</span>
-                    <span className="text-slate-300">CoreNLP v4.5.5</span>
+                    <span className="text-slate-300">Textra Neural v2.0</span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span>Tokens Processed</span>
@@ -391,23 +391,23 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Tab 3: CoreNLP Configuration */}
-        {activeTab === "corenlp" && (
+        {/* Tab 3: NLP Engine Configuration */}
+        {activeTab === "nlp" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm">
                 <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
                   <Server className="w-5 h-5 text-indigo-400" />
-                  Stanford CoreNLP Server Connection
+                  Neural Linguistic Engine Connection
                 </h2>
                 <p className="text-xs text-slate-400 mb-6">
-                  Configure the backend Java server URL that executes neural models, parsers, and annotators.
+                  Configure the backend NLP server endpoint that executes neural models, parsers, and annotators.
                 </p>
 
                 <div className="space-y-4 mb-6">
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                      CoreNLP Endpoint Address
+                      Engine Endpoint Address
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -483,7 +483,7 @@ export default function ProfilePage() {
 
                 <div className="flex justify-end">
                   <button
-                    onClick={() => handleSave("CoreNLP preferences")}
+                    onClick={() => handleSave("NLP Engine preferences")}
                     className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
                   >
                     <Save className="w-4 h-4" />
@@ -496,24 +496,24 @@ export default function ProfilePage() {
             {/* Model Jar Information */}
             <div className="space-y-6">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm">
-                <h3 className="text-sm font-semibold text-white mb-3">Loaded Model Archives</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">Loaded Neural Models</h3>
                 <div className="space-y-3 text-xs">
                   <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                    <p className="font-mono text-indigo-400 text-xs truncate">stanford-corenlp-4.5.5-models.jar</p>
+                    <p className="font-mono text-indigo-400 text-xs truncate">textra-neural-nlp-models-v2.bin</p>
                     <p className="text-slate-500 mt-1">Universal POS, NER, Penn Treebank Grammars</p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
                     <p className="font-mono text-indigo-400 text-xs truncate">
-                      stanford-corenlp-4.5.5-models-english.jar
+                      textra-neural-sentiment-deps.bin
                     </p>
-                    <p className="text-slate-500 mt-1">Deep Sentiment RNN & Universal Dependencies</p>
+                    <p className="text-slate-500 mt-1">Deep Sentiment RNN &amp; Universal Dependencies</p>
                   </div>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-slate-800/80">
                   <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>Heap Memory</span>
-                    <span className="text-slate-200 font-mono">4.0 GB / -Xmx4g</span>
+                    <span>Inference Memory</span>
+                    <span className="text-slate-200 font-mono">Optimized PyTorch &amp; Stanza</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 w-3/4 rounded-full" />

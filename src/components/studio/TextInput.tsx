@@ -163,14 +163,14 @@ export function TextInput({
           name="file"
           aria-label="Upload document file"
           type="file"
-          accept=".txt,.docx,.md,.json,.csv"
+          accept=".pdf,.docx,.txt,.md"
           onChange={handleFileInputChange}
           className="hidden"
         />
         <div className="flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
           <UploadCloud className="w-4 h-4 text-indigo-500" />
           <span>
-            Drop a <strong className="text-zinc-700 dark:text-zinc-200">.txt, .docx, .md, .csv</strong> file here, or{" "}
+            Drop a <strong className="text-zinc-700 dark:text-zinc-200">.pdf (with OCR), .docx, .txt, or .md</strong> file here, or{" "}
             <span className="text-indigo-600 dark:text-indigo-400 underline font-medium">browse</span>
           </span>
           {uploadStatus && (
@@ -257,7 +257,7 @@ export function TextInput({
           ) : (
             <>
               <Play className="w-4 h-4 fill-current" />
-              <span>Run CoreNLP Studio</span>
+              <span>Run Neural NLP Studio</span>
             </>
           )}
         </button>

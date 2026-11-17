@@ -100,7 +100,7 @@ export default function SignupPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Social authentication failed");
 
-      router.push("/dashboard");
+      router.push("/studio");
       router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Social authentication failed";
@@ -129,7 +129,7 @@ export default function SignupPage() {
                 Join Textra NLP Studio
               </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Unlock full Stanford NLP linguistic visualization suite
+                Unlock full neural NLP linguistic visualization suite
               </p>
             </div>
 
@@ -234,7 +234,7 @@ export default function SignupPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="manning@stanford.edu"
+                    placeholder="alex@example.com"
                     required
                     className="w-full text-xs py-2.5 pl-10 pr-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/60 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all"
                   />

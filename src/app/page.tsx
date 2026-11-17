@@ -29,27 +29,26 @@ import { Footer } from "@/components/layout/Footer";
 // Sample NLP interactive presets
 const PRESET_DEMOS = [
   {
-    title: "Stanford History",
-    text: "Stanford University was founded in 1885 by Leland and Jane Stanford in California.",
+    title: "World History",
+    text: "The Nobel Prize was established in 1895 by Alfred Nobel to honor achievements in science, literature, and peace.",
     tokens: [
-      { word: "Stanford", pos: "NNP", ner: "ORGANIZATION", color: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
-      { word: "University", pos: "NNP", ner: "ORGANIZATION", color: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+      { word: "The", pos: "DT", ner: "O", color: "bg-slate-800 text-slate-300 border-slate-700" },
+      { word: "Nobel", pos: "NNP", ner: "ORGANIZATION", color: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+      { word: "Prize", pos: "NNP", ner: "ORGANIZATION", color: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
       { word: "was", pos: "VBD", ner: "O", color: "bg-slate-800 text-slate-300 border-slate-700" },
-      { word: "founded", pos: "VBN", ner: "O", color: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30" },
+      { word: "established", pos: "VBN", ner: "O", color: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30" },
       { word: "in", pos: "IN", ner: "O", color: "bg-slate-800 text-slate-300 border-slate-700" },
-      { word: "1885", pos: "CD", ner: "DATE", color: "bg-purple-500/10 text-purple-300 border-purple-500/30" },
+      { word: "1895", pos: "CD", ner: "DATE", color: "bg-purple-500/10 text-purple-300 border-purple-500/30" },
       { word: "by", pos: "IN", ner: "O", color: "bg-slate-800 text-slate-300 border-slate-700" },
-      { word: "Leland", pos: "NNP", ner: "PERSON", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
-      { word: "and", pos: "CC", ner: "O", color: "bg-slate-800 text-slate-300 border-slate-700" },
-      { word: "Jane", pos: "NNP", ner: "PERSON", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
-      { word: "Stanford", pos: "NNP", ner: "PERSON", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
+      { word: "Alfred", pos: "NNP", ner: "PERSON", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
+      { word: "Nobel", pos: "NNP", ner: "PERSON", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
       { word: "in", pos: "IN", ner: "O", color: "bg-slate-800 text-slate-300 border-slate-700" },
-      { word: "California", pos: "NNP", ner: "LOCATION", color: "bg-sky-500/10 text-sky-300 border-sky-500/30" },
+      { word: "Stockholm", pos: "NNP", ner: "LOCATION", color: "bg-sky-500/10 text-sky-300 border-sky-500/30" },
       { word: ".", pos: ".", ner: "O", color: "bg-slate-800 text-slate-400 border-slate-700" },
     ],
     sentiment: "Positive",
     sentimentScore: 88,
-    relations: ["Leland Stanford founded Stanford University", "Stanford University located in California"],
+    relations: ["Alfred Nobel established Nobel Prize", "Nobel Prize established in 1895"],
   },
   {
     title: "Quantum Breakthrough",
@@ -95,7 +94,7 @@ export default function LandingPage() {
             {/* Engine badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold mb-8 backdrop-blur-md shadow-lg shadow-indigo-500/10 animate-float">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Stanford CoreNLP 4.5.5 Engine Connected</span>
+              <span>Textra Neural Linguistic Engine Online</span>
               <span className="text-slate-500">•</span>
               <span className="text-indigo-400">Universal Dependencies v2</span>
             </div>
@@ -110,7 +109,7 @@ export default function LandingPage() {
 
             {/* Subtitle */}
             <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
-              Textra integrates Stanford CoreNLP neural architectures into a modern reactive suite.
+              Textra integrates deep neural NLP architectures into a modern reactive suite.
               Analyze syntax trees, universal dependencies, named entities, recursive sentiment,
               and coreference chains with real-time visualizers.
             </p>
@@ -171,7 +170,7 @@ export default function LandingPage() {
                 Interactive Model Preview
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mt-2 mb-4">
-                Experience Stanford CoreNLP Output in Real-Time
+                Experience Textra Neural NLP Output in Real-Time
               </h2>
               <p className="text-sm text-slate-400 max-w-2xl mx-auto">
                 Toggle preset sentences below to inspect token annotations, entity tags, sentiment polarity, and extracted relational triplets.
@@ -369,10 +368,10 @@ export default function LandingPage() {
                 Pipeline Architecture
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mt-2 mb-4">
-                How Textra &amp; CoreNLP Operate Together
+                How Textra Neural Architecture Operates
               </h2>
               <p className="text-sm text-slate-400 max-w-2xl mx-auto">
-                Next.js handles presentation, user authentication, and reactive visualizers, while the Java CoreNLP server executes heavy deep-learning inference.
+                Next.js handles presentation, user authentication, and reactive visualizers, while the dedicated neural engine executes heavy deep-learning inference.
               </p>
             </div>
 
@@ -395,9 +394,9 @@ export default function LandingPage() {
 
               <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800 relative">
                 <span className="text-xs font-mono text-indigo-400 font-bold block mb-1">03 / INFERENCE</span>
-                <h4 className="text-sm font-bold text-white mb-2">CoreNLP Java 17</h4>
+                <h4 className="text-sm font-bold text-white mb-2">Neural NLP Engine</h4>
                 <p className="text-xs text-slate-400">
-                  Port 9000 daemon processes sentences across 8 annotator phases.
+                  Dedicated neural engine processes sentences across 8 annotator phases.
                 </p>
               </div>
 

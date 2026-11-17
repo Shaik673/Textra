@@ -24,7 +24,7 @@ export function JsonViewer({ data }: JsonViewerProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `corenlp-output-${Date.now()}.json`;
+    a.download = `textra-nlp-ast-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -34,7 +34,7 @@ export function JsonViewer({ data }: JsonViewerProps) {
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
           <FileCode className="w-3.5 h-3.5 text-indigo-500" />
-          Raw CoreNLP JSON Response
+          Raw Neural NLP JSON AST Response
         </h4>
 
         <div className="flex items-center gap-2">
