@@ -122,5 +122,5 @@ async def json_annotate(payload: AnnotationRequest):
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("TEXTRA_PYTHON_PORT", 8000))
-    print(f"Starting Textra Python NLP Engine on http://127.0.0.1:{port}")
-    uvicorn.run("python_engine.server:app", host="127.0.0.1", port=port, log_level="info", reload=False)
+    print(f"Starting Textra Python NLP Engine on http://127.0.0.1:{port}", flush=True)
+    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")

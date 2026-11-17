@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { otpStore } from "@/lib/authStore";
-import { verifyOtpInDb } from "@/lib/dbService";
+import { verifyOtpInDb, getUserByEmail, registerUser } from "@/lib/dbService";
+import { signSessionToken, setSessionCookie } from "@/lib/authSession";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,12 +11,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and OTP are required." }, { status: 400 });
     }
 
-    const stored = otpStore.get(email.toLowerCase());
+    const normalizedEmail = email.toLowerCase().trim();
+    const stored = otpStore.get(normalizedEmail);
 
-    // Check MongoDB or in-memory fallback
     const isMasterOtp = otp === "123456";
     const isValidStored = stored && stored.code === otp && Date.now() < stored.expiresAt;
-    const isValidDb = await verifyOtpInDb(email.toLowerCase(), otp);
+    const isValidDb = await verifyOtpInDb(normalizedEmail, otp);
 
     if (!isMasterOtp && !isValidStored && !isValidDb) {
       return NextResponse.json(
@@ -24,16 +25,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Clear in-memory OTP after successful use
     if (stored) {
-      otpStore.delete(email.toLowerCase());
+      otpStore.delete(normalizedEmail);
     }
 
-    return NextResponse.json({
+    // Ensure user document exists and is verified
+    let user = await getUserByEmail(normalizedEmail);
+    if (!user) {
+      const reg = await registerUser(normalizedEmail.split("@")[0], normalizedEmail);
+      user = reg.user;
+    }
+
+    // Create session token so user is logged in immediately after verification
+    const token = signSessionToken({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    });
+
+    const res = NextResponse.json({
       success: true,
       message: "Email verified successfully!",
       verified: true,
+      user,
     });
+
+    setSessionCookie(res, token);
+    return res;
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Verification failed";
     return NextResponse.json({ error: msg }, { status: 500 });

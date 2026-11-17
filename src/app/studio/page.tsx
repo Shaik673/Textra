@@ -11,6 +11,7 @@ import { ParseTreeVisualizer } from "@/components/studio/ParseTreeVisualizer";
 import { CorefVisualizer } from "@/components/studio/CorefVisualizer";
 import { OpenIeVisualizer } from "@/components/studio/OpenIeVisualizer";
 import { JsonViewer } from "@/components/studio/JsonViewer";
+import { Footer } from "@/components/layout/Footer";
 import { CoreNLPResponse } from "@/types/corenlp";
 import {
   Tag,
@@ -24,22 +25,16 @@ import {
   AlertTriangle,
   Sparkles,
   Info,
+  Layers,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 
 export default function StudioPage() {
-  const [text, setText] = useState<string>(
-    "The quick brown fox jumped over the lazy dog. Barack Obama was born in Hawaii."
-  );
-  const [annotators, setAnnotators] = useState<string[]>([
-    "pos",
-    "lemma",
-    "ner",
-    "sentiment",
-    "depparse",
-    "parse",
-    "coref",
-    "openie",
-  ]);
+  // Empty text initially - no output should display unless user submits text
+  const [text, setText] = useState<string>("");
+  // All annotation boxes remain unchecked initially unless user checks them
+  const [annotators, setAnnotators] = useState<string[]>([]);
   const [language, setLanguage] = useState<string>("en");
 
   const [serverStatus, setServerStatus] = useState<"checking" | "connected" | "offline">("checking");
@@ -74,12 +69,21 @@ export default function StudioPage() {
     checkStatus();
   }, [checkStatus]);
 
-  // Run CoreNLP annotation
+  // Run CoreNLP / Python annotation
   const runAnnotation = async () => {
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      setError("Please enter or paste text to annotate.");
+      return;
+    }
+
+    if (annotators.length === 0) {
+      setError("Please check at least one pipeline annotation checkbox above (e.g. POS, NER, Parse Tree) before running analysis.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
+    const startTime = Date.now();
 
     try {
       const res = await fetch("/api/annotate", {
@@ -99,6 +103,34 @@ export default function StudioPage() {
       }
 
       setNlpData(data);
+
+      // Auto-switch to the first selected annotator's tab if current tab is not in annotators
+      if (annotators.length > 0 && !annotators.includes(activeTab) && activeTab !== "json") {
+        const firstSelected = annotators[0];
+        if (["pos", "ner", "sentiment", "depparse", "parse", "coref", "openie"].includes(firstSelected)) {
+          setActiveTab(firstSelected as typeof activeTab);
+        }
+      }
+
+      // Record activity in MongoDB Atlas
+      const totalTokens = (data.sentences || []).reduce(
+        (acc: number, s: { tokens?: unknown[] }) => acc + (s.tokens?.length || 0),
+        0
+      );
+      const reqDuration = Date.now() - startTime;
+
+      fetch("/api/activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          textSnippet: text.slice(0, 150),
+          annotators,
+          tokensCount: totalTokens,
+          dominantSentiment: data.sentences?.[0]?.sentiment || "Neutral",
+          latencyMs: reqDuration,
+          status: "Completed",
+        }),
+      }).catch((err) => console.warn("Could not record activity to MongoDB:", err));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to execute annotation";
       setError(msg);
@@ -150,15 +182,9 @@ export default function StudioPage() {
   };
 
   const resetAnnotators = () => {
-    setAnnotators(["pos", "lemma", "ner", "depparse", "sentiment"]);
+    // Unchecks all boxes
+    setAnnotators([]);
   };
-
-  // Run initial annotation when server becomes connected
-  useEffect(() => {
-    if (serverStatus === "connected" && !nlpData && !isLoading) {
-      runAnnotation();
-    }
-  }, [serverStatus]);
 
   const sentences = nlpData?.sentences || [];
   const totalTokens = sentences.reduce((acc, s) => acc + (s.tokens?.length || 0), 0);
@@ -179,13 +205,13 @@ export default function StudioPage() {
           <div className="relative z-10 max-w-3xl space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              CoreNLP Studio Workspace
+              Stanford NLP Studio Workspace
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Natural Language Processing Studio
             </h2>
             <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-              Analyze text using the integrated Stanford CoreNLP suite: parts-of-speech, named entity recognition, Universal Dependencies, syntactic constituency trees, deep recursive sentiment, and semantic relation triplets.
+              Analyze text using the integrated Stanford NLP suite: select your annotations, input custom text, and generate real-time interactive syntax trees, parts of speech, named entities, and sentiment analysis.
             </p>
           </div>
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-indigo-500/20 to-transparent pointer-events-none" />
@@ -209,31 +235,89 @@ export default function StudioPage() {
           <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-200 flex items-start gap-3 shadow-xs">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <div className="text-sm font-bold">Annotation Request Failed</div>
+              <div className="text-sm font-bold">Annotation Notice</div>
               <p className="text-xs text-rose-700 dark:text-rose-300 leading-relaxed font-mono">
                 {error}
-              </p>
-              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
-                Tip: Ensure StanfordCoreNLPServer is listening at port 9000 with the required model jars loaded.
               </p>
             </div>
           </div>
         )}
 
-        {/* Outcomes & Visualization Room */}
+        {/* Initial Empty State - Shown when user has not run text yet */}
+        {!nlpData && !isLoading && (
+          <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/40 p-8 sm:p-12 text-center space-y-6">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto shadow-sm">
+              <Layers className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-2 max-w-md mx-auto">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                Ready for Text Analysis
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Enter your text in the workspace above, check the annotations you want to extract, and click <strong className="text-zinc-700 dark:text-zinc-300">Run Analysis</strong>.
+              </p>
+            </div>
+
+            {/* 4 Feature Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto pt-2 text-left">
+              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-2xs space-y-1">
+                <div className="text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5" />
+                  POS & Lemmas
+                </div>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Penn Treebank grammatical tags and canonical root word forms.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-2xs space-y-1">
+                <div className="text-purple-600 dark:text-purple-400 font-bold text-xs flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Named Entities
+                </div>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Detects People, Organizations, Locations, Numbers, and Dates.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-2xs space-y-1">
+                <div className="text-cyan-600 dark:text-cyan-400 font-bold text-xs flex items-center gap-1.5">
+                  <Network className="w-3.5 h-3.5" />
+                  Constituency Tree
+                </div>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Hierarchical phrase structure tree with interactive glowing line edges.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-2xs space-y-1">
+                <div className="text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                  <Smile className="w-3.5 h-3.5" />
+                  Sentiment Polarity
+                </div>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Recursive deep neural sentiment distribution from Negative to Positive.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Outcomes & Visualization Room - Shown only after user executes analysis */}
         {nlpData && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in duration-200">
             {/* Summary Statistics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">
                 <div className="text-xs text-zinc-500 font-medium">Sentences</div>
-                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono">
                   {sentences.length}
                 </div>
               </div>
               <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">
                 <div className="text-xs text-zinc-500 font-medium">Total Tokens</div>
-                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 font-mono">
                   {totalTokens}
                 </div>
               </div>
@@ -245,7 +329,7 @@ export default function StudioPage() {
               </div>
               <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs">
                 <div className="text-xs text-zinc-500 font-medium">Coreference Clusters</div>
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 font-mono">
                   {Object.keys(nlpData.corefs || {}).length}
                 </div>
               </div>
@@ -253,39 +337,38 @@ export default function StudioPage() {
 
             {/* Navigation Tabs */}
             <div className="border-b border-zinc-200 dark:border-zinc-800">
-              <nav className="flex flex-wrap gap-2 -mb-px">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-px">
                 {[
-                  { id: "pos", label: "Parts-of-Speech & Lemmas", icon: Tag },
-                  { id: "ner", label: "Named Entities (NER)", icon: ShieldCheck },
+                  { id: "pos", label: "POS & Lemmas", icon: Tag },
+                  { id: "ner", label: "Named Entities", icon: ShieldCheck },
+                  { id: "depparse", label: "Dependency Arcs", icon: GitFork },
+                  { id: "parse", label: "Parse Tree", icon: Network },
                   { id: "sentiment", label: "Sentiment", icon: Smile },
-                  { id: "depparse", label: "Dependency Parse", icon: GitFork },
-                  { id: "parse", label: "Constituency Tree", icon: Network },
                   { id: "coref", label: "Coreference", icon: Users },
-                  { id: "openie", label: "Open IE Relations", icon: Share2 },
-                  { id: "json", label: "Raw JSON", icon: FileCode },
+                  { id: "openie", label: "Open IE Facts", icon: Share2 },
+                  { id: "json", label: "Raw JSON AST", icon: FileCode },
                 ].map((tab) => {
                   const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-
+                  const active = activeTab === tab.id;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                      className={`flex items-center gap-2 py-3 px-4 border-b-2 text-xs font-semibold transition-all ${
-                        isActive
+                      className={`flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold rounded-t-xl transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                        active
                           ? "border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20"
-                          : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700"
+                          : "border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/50"
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-3.5 h-3.5" />
                       <span>{tab.label}</span>
                     </button>
                   );
                 })}
-              </nav>
+              </div>
             </div>
 
-            {/* Active Visualization Container */}
+            {/* Visualizer Panels */}
             <div className="pt-2">
               {activeTab === "pos" && <PosVisualizer data={nlpData} />}
               {activeTab === "ner" && <NerVisualizer data={nlpData} />}
@@ -299,6 +382,8 @@ export default function StudioPage() {
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 }

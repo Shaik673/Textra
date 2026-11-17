@@ -85,12 +85,6 @@ export function TextInput({
 
   const handleSelectPreset = (preset: SamplePreset) => {
     onChangeText(preset.text);
-    // ensure recommended annotators are enabled
-    preset.recommendedAnnotators.forEach((a) => {
-      if (!annotators.includes(a)) {
-        onToggleAnnotator(a);
-      }
-    });
   };
 
   return (
@@ -204,9 +198,9 @@ export function TextInput({
             <span className="text-zinc-300 dark:text-zinc-700">|</span>
             <button
               onClick={onResetAnnotators}
-              className="text-zinc-500 hover:underline"
+              className="text-zinc-500 hover:underline cursor-pointer"
             >
-              Default
+              Uncheck All
             </button>
           </div>
         </div>

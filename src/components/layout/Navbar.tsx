@@ -10,14 +10,17 @@ import {
   User,
   LogIn,
   UserPlus,
+  LogOut,
   Menu,
   X,
   ExternalLink,
 } from "lucide-react";
+import { useAuth } from "@/lib/useAuth";
 
 export function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Active link check
   const isActive = (path: string) => {
@@ -76,21 +79,51 @@ export function Navbar() {
 
           {/* Auth & CTAs */}
           <div className="hidden md:flex items-center gap-2.5">
-            <Link
-              href="/auth/login"
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors flex items-center gap-1.5"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              Sign In
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/50 bg-white/60 dark:bg-zinc-900/60 transition-all text-xs font-medium text-zinc-700 dark:text-zinc-200"
+                >
+                  {user.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.avatarUrl} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="max-w-[100px] truncate">{user.name}</span>
+                </Link>
 
-            <Link
-              href="/auth/signup"
-              className="text-xs font-semibold px-3.5 py-1.5 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-xs"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              Get Started
-            </Link>
+                <button
+                  onClick={logout}
+                  className="text-xs font-semibold px-2.5 py-1.5 rounded-lg text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-1"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors flex items-center gap-1.5"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  Sign In
+                </Link>
+
+                <Link
+                  href="/auth/signup"
+                  className="text-xs font-semibold px-3.5 py-1.5 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-xs"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  Get Started
+                </Link>
+              </>
+            )}
 
             <Link
               href="/studio"
@@ -131,13 +164,39 @@ export function Navbar() {
             </Link>
           ))}
           <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2">
-            <Link
-              href="/auth/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-center py-2 text-sm font-semibold rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300"
-            >
-              Sign In
-            </Link>
+            {isAuthenticated && user ? (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500">
+                  Signed in as <strong className="text-zinc-800 dark:text-zinc-200">{user.name}</strong>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="text-left px-3 py-2 text-sm font-semibold rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-center py-2 text-sm font-semibold rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-center py-2 text-sm font-semibold rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-950"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
             <Link
               href="/studio"
               onClick={() => setIsMobileMenuOpen(false)}

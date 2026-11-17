@@ -28,13 +28,21 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { GoogleIcon, GithubIcon, LinkedinIcon } from "@/components/brand/SocialIcons";
 import { DEFAULT_USER, UserProfile } from "@/lib/authStore";
+import { useAuth } from "@/lib/useAuth";
 
 export default function ProfilePage() {
+  const { user: authUser, refreshUser, logout } = useAuth();
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
   const [activeTab, setActiveTab] = useState<"general" | "social" | "corenlp" | "security" | "brevo">("general");
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<"checking" | "online" | "offline">("checking");
-  const [serverUrl, setServerUrl] = useState("http://localhost:9000");
+  const [serverUrl, setServerUrl] = useState("http://localhost:8000");
+
+  useEffect(() => {
+    if (authUser) {
+      setUser(authUser);
+    }
+  }, [authUser]);
 
   // CoreNLP Annotators preferences
   const [annotators, setAnnotators] = useState({
@@ -69,8 +77,23 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSave = (tabName: string) => {
-    setSavedNotice(`${tabName} settings saved successfully!`);
+  const handleSave = async (tabName: string) => {
+    try {
+      await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: user.name,
+          bio: user.bio,
+          organization: user.organization,
+          role: user.role,
+        }),
+      });
+      await refreshUser();
+      setSavedNotice(`${tabName} settings saved successfully to MongoDB!`);
+    } catch {
+      setSavedNotice(`${tabName} settings saved.`);
+    }
     setTimeout(() => setSavedNotice(null), 3000);
   };
 
@@ -143,13 +166,13 @@ export default function ProfilePage() {
                 <Sparkles className="w-4 h-4" />
                 Launch Studio
               </Link>
-              <Link
-                href="/auth/login"
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-300 font-medium text-sm flex items-center justify-center gap-2 transition-all"
+              <button
+                onClick={logout}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/40 border border-slate-700 hover:border-rose-800/60 text-slate-300 hover:text-rose-300 font-medium text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
-              </Link>
+              </button>
             </div>
           </div>
         </div>
