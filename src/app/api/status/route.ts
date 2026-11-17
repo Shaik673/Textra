@@ -30,11 +30,11 @@ export async function GET() {
         return NextResponse.json({
           online: true,
           url,
-          engine: isPython ? "Textra Neural Engine (Python In-Project Engine)" : "Textra Linguistic Engine",
+          engine: isPython ? "Textra Neural Engine" : "Textra Linguistic Engine",
           latencyMs: latency,
           status: "connected",
           message: isPython
-            ? "In-Project Textra Neural NLP Engine is operational."
+            ? "Textra Neural NLP Engine is operational."
             : "Textra Linguistic Engine is operational.",
         });
       }

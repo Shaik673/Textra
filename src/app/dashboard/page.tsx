@@ -181,7 +181,7 @@ export default function DashboardPage() {
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
               {user ? (
                 <span>
-                  Real-time activity tracking for <strong className="text-zinc-700 dark:text-zinc-300">{user.email}</strong> &bull; {user.role || "NLP Researcher"}
+                  Real-time activity tracking &bull; {user.role || "NLP Researcher"}
                 </span>
               ) : (
                 "Live user activity tracking, token analytics, and model performance metrics stored in MongoDB"
